@@ -1,2 +1,2 @@
 # cube-snake
-snake in a cube
+snake in a cube!
