@@ -1,0 +1,25 @@
+{
+  "name": "cube-snake",
+  "version": "1.0.0",
+  "description": "snake in a cube!",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ponml/cube-snake.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ponml/cube-snake/issues"
+  },
+  "homepage": "https://github.com/ponml/cube-snake#readme",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-loader": "^6.2.7",
+    "babel-preset-latest": "^6.16.0",
+    "webpack": "^1.13.3"
+  }
+}
