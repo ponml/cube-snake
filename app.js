@@ -1,5 +1,6 @@
 var THREE = require("./scripts/three.min.js");
 var Stage = require("./scripts/stage.js");
+var Snake = require("./scripts/snake.js");
 
 function setupKeyHandlers() {
 
@@ -28,13 +29,13 @@ function addCubeToScene(scene) {
         scene.add(cube.mesh);
     };
 }
-
+debugger;
 var scene = new THREE.Scene();
 scene.background = new THREE.Color( 0xffffff );
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
-var camHelper = new THREE.CameraHelper( camera );
-scene.add(camHelper);
+// var camHelper = new THREE.CameraHelper( camera );
+// scene.add(camHelper);
 
 var axisHelper = new THREE.AxisHelper( 100 );
 scene.add(axisHelper);
@@ -43,11 +44,19 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-var stage = new Stage()
+var stage = new Stage();
 stage.init(5);
-stage.traverse(addCubeToScene(scene));
+scene.add(stage.line);
+
+var snake = new Snake({
+    position: new THREE.Vector3()
+});
+
+snake.traverse(addCubeToScene(scene));
 
 camera.position.z = 50;
+camera.position.x = 100;
+camera.position.y = 100;
 var pos = 0.01;
 setupKeyHandlers()
 

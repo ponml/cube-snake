@@ -8,7 +8,7 @@ function Cube(options) {
     if(!options) {
         options = {};
     }
-    var effectiveCubeDimension = options.dimension || CUBE_DIM;
+    var effectiveCubeDimension = options.dimension || Cube.CUBE_DIMENSION_SIZE;
     me.width = effectiveCubeDimension;
     me.length = effectiveCubeDimension;
     me.height = effectiveCubeDimension;
@@ -21,23 +21,24 @@ function Cube(options) {
     me.i = options.i;   
     me.j = options.j;
     me.k = options.k;
-    me.x = options.i * effectiveCubeDimension;
-    me.y = options.j * effectiveCubeDimension;
-    me.z = options.k * effectiveCubeDimension;
+    me.size = options.size || Cube.CUBE_DIMENSION_SIZE;    
+    me.position = options.position;
 
     me.color = options.color || 0x000000;
     
-    me.geometry = new THREE.BoxGeometry( me.x, me.y, me.z );
+    me.geometry = new THREE.BoxGeometry( me.size, me.size, me.size,  );
     me.material = new THREE.LineBasicMaterial( { color: me.color } );
+    
+
     // me.material = new THREE.MeshPhongMaterial( {
-    //     color: 0xff00ff,
+    //     color: me.color,
     //     polygonOffset: true,
     //     polygonOffsetFactor: 1, // positive value pushes polygon further away
     //     polygonOffsetUnits: 1
-    // } );
+    // });
     me.mesh = new THREE.Mesh( me.geometry, me.material );
-
-    wireframe
+    me.mesh.position.add(me.position);
+   //wireframe
     var geo = new THREE.EdgesGeometry( me.mesh.geometry ); // or WireframeGeometry
     var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 25 } );
     var wireframe = new THREE.LineSegments( geo, mat );
