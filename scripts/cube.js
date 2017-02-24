@@ -22,36 +22,23 @@ function Cube(options) {
     me.j = options.j;
     me.k = options.k;
     me.size = options.size || Cube.CUBE_DIMENSION_SIZE;    
-    me.position = options.position;
-
+    me.position = options.position || new THREE.Vector3();
     me.color = options.color || 0x000000;
-    
-    me.geometry = new THREE.BoxGeometry( me.size, me.size, me.size,  );
-    me.material = new THREE.LineBasicMaterial( { color: me.color } );
-    
-
-    // me.material = new THREE.MeshPhongMaterial( {
-    //     color: me.color,
-    //     polygonOffset: true,
-    //     polygonOffsetFactor: 1, // positive value pushes polygon further away
-    //     polygonOffsetUnits: 1
-    // });
+    me.geometry = new THREE.BoxGeometry( me.size, me.size, me.size);
+    me.material = new THREE.MeshBasicMaterial( { color: me.color } );
     me.mesh = new THREE.Mesh( me.geometry, me.material );
     me.mesh.position.add(me.position);
-   //wireframe
-    var geo = new THREE.EdgesGeometry( me.mesh.geometry ); // or WireframeGeometry
-    var mat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 25 } );
-    var wireframe = new THREE.LineSegments( geo, mat );
-    me.mesh.add( wireframe );
 }
 
 Cube.prototype.equals = function equals(cube) {
     var me = this;
-    if(me.i === cube.i && me.j === cube.j && me.k === cube.k) {
-        return true;
-    } else {
-        return false;
-    }
+    return me.position.equals(cube);
 }
+
+Cube.prototype.updatePosition = function updatePosition(cube) {
+    var me = this;
+    me.position = new THREE.Vector3().add(cube.position);
+    me.mesh.position.set(cube.position.x, cube.position.y, cube.position.z);
+};
 
 module.exports = Cube;

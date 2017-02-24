@@ -10,18 +10,21 @@ Stage.prototype.init = function(dimension) {
     var me = this;
     var i,j,k;
     me.dimension = dimension;
-    for(i = 0 ; i < dimension ; i++) {
+    var min_dimension = -1 * 5;
+    for(i = 0 ; i < dimension*2 ; i++) {
         me.cubes.push([]);
-        for(j = 0 ; j < dimension ; j++) {
+        for(j = 0 ; j < dimension*2 ; j++) {
             me.cubes[i].push([]);
-            for(k = 0 ; k < dimension ; k++) {
+            for(k = 0 ; k < dimension*2 ; k++) {
                 me.cubes[i][j].push(new Cube(
                     {
                         position: new THREE.Vector3(
-                            i*Cube.CUBE_DIMENSION_SIZE, 
-                            j*Cube.CUBE_DIMENSION_SIZE, 
-                            k*Cube.CUBE_DIMENSION_SIZE
-                        )
+                            (i+(dimension/2.0))*Cube.CUBE_DIMENSION_SIZE, 
+                            (j+(dimension/2.0))*Cube.CUBE_DIMENSION_SIZE, 
+                            (k+(dimension/2.0))*Cube.CUBE_DIMENSION_SIZE
+                        ),
+                        type: "stage",
+                        transparent: true
                     }
                 ));
                 
@@ -29,25 +32,17 @@ Stage.prototype.init = function(dimension) {
         }
     }
     var stageSize = dimension * Cube.CUBE_DIMENSION_SIZE;
+    var cubeDimPadding = Cube.CUBE_DIMENSION_SIZE;
+    me.geometry = new THREE.BoxGeometry( 100+cubeDimPadding, 100+cubeDimPadding, 100+cubeDimPadding);
+    me.material = new THREE.MeshBasicMaterial( { color: 0xff00ff } );
+    me.mesh = new THREE.Mesh( me.geometry, me.material );
+    me.mesh.material.depthTest = false;
+    me.mesh.material.opacity = 0.15;
+    me.mesh.material.transparent = true;
 
-    var geometry = new THREE.BoxGeometry( 100, 100, 100);
-
-    var wireframe = new THREE.WireframeGeometry( geometry );
-
-    var line = new THREE.LineSegments( wireframe );
-    line.material.depthTest = false;
-    line.material.opacity = 0.75;
-    line.material.transparent = true;
-    me.line = line;
-    // me.geometry = new THREE.BoxGeometry( stageSize, stageSize, stageSize );
-    // me.material = new THREE.LineBasicMaterial( { color: 0xffffff } );
-    // me.mesh = new THREE.Mesh( me.geometry, me.material );
-    // //wireframe
-    // var geo = new THREE.EdgesGeometry( me.mesh.geometry ); // or WireframeGeometry
-    // var mat = new THREE.LineBasicMaterial( { color: 0xFF00FF, linewidth: 100 } );
-    // var wireframe = new THREE.LineSegments( geo, mat );
-    // me.mesh.add( wireframe );
-
+    var wireframe = new THREE.WireframeGeometry( me.geometry );
+    var lines = new THREE.LineSegments( wireframe );
+    me.mesh.add(lines);
 }
 
 Stage.prototype.draw = function draw() {
@@ -60,9 +55,9 @@ Stage.prototype.rotate = function rotate() {
 
 Stage.prototype.traverse = function(callback) {
     var me = this;
-    for(i = 0 ; i < me.dimension ; i++) {
-        for(j = 0 ; j < me.dimension ; j++) {
-            for(k = 0 ; k < me.dimension ; k++) {
+    for(i = 0 ; i < me.dimension*2 ; i++) {
+        for(j = 0 ; j < me.dimension*2 ; j++) {
+            for(k = 0 ; k < me.dimension*2 ; k++) {
                 callback(me.cubes[i][j][k]);
             }
         }
