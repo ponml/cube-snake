@@ -1,58 +1,58 @@
-var THREE = require("./scripts/three.min.js");
+    var THREE = require("./scripts/three.min.js");
 var Stage = require("./scripts/stage.js");
 var Snake = require("./scripts/snake.js");
 var Cube = require("./scripts/cube.js");
 var Food = require("./scripts/food.js");
 
+var STAGE_SIZE = 100;
+
 function addChildrenToFringeSet(parentNode) {
-    var northCoords = {
-        x: parentNode.x/Segment.SEGMENT_SIZE,
-        y: (parentNode.y-Segment.SEGMENT_SIZE)/Segment.SEGMENT_SIZE
-    };
-    var southCoords = {
-        x: parentNode.x/Segment.SEGMENT_SIZE,
-        y: (parentNode.y+Segment.SEGMENT_SIZE)/Segment.SEGMENT_SIZE
-    };
-    var westCoords = {
-        x: (parentNode.x-Segment.SEGMENT_SIZE)/Segment.SEGMENT_SIZE,
-        y: parentNode.y/Segment.SEGMENT_SIZE
-    };
-    var eastCoords = {
-        x: (parentNode.x+Segment.SEGMENT_SIZE)/Segment.SEGMENT_SIZE,
-        y: parentNode.y/Segment.SEGMENT_SIZE
-    };
     var children = [];
+    
+    var parentX = parentNode.position.x;
+    var parentY = parentNode.position.y;
+    var parentZ = parentNode.position.z;
 
-    if(parentNode.y-Segment.SEGMENT_SIZE >= 0) {
-        var cellToConsider = grid.cells[northCoords.x][northCoords.y];
-        if(cellToConsider && !snake.cellIsSnake(cellToConsider)) {
-            children.push(cellToConsider);
-        }
-    }
-    if(parentNode.y+Segment.SEGMENT_SIZE < canvasHeight) {
-        var cellToConsider = grid.cells[southCoords.x][southCoords.y];
-        if(cellToConsider && !snake.cellIsSnake(cellToConsider)) {
-            children.push(cellToConsider);
-        }
-    }
-    if(parentNode.x-Segment.SEGMENT_SIZE >= 0) {
-        var cellToConsider = grid.cells[westCoords.x][westCoords.y];
-        if(cellToConsider && !snake.cellIsSnake(cellToConsider)) {            
-            children.push(cellToConsider);
-        }
-    }
-    if(parentNode.x+Segment.SEGMENT_SIZE < canvasWidth) {
-        var cellToConsider = grid.cells[eastCoords.x][eastCoords.y];
-        if(cellToConsider && !snake.cellIsSnake(cellToConsider)) {
-            children.push(cellToConsider);
-        }
-    }                        
+    var zeroOffset = Cube.CUBE_DIMENSION_SIZE / 2;
 
+    var i = (parentX/Cube.CUBE_DIMENSION_SIZE) + zeroOffset;
+    var j = (parentY/Cube.CUBE_DIMENSION_SIZE) + zeroOffset;
+    var k = (parentZ/Cube.CUBE_DIMENSION_SIZE) + zeroOffset;
+
+    var max = Cube.CUBE_DIMENSION_SIZE - 1;
+
+    var children = [];
+    if(i < max) {
+        children.push(stage.cubes[i+1][j][k]);
+    }
+    if(i > 0) {
+        children.push(stage.cubes[i-1][j][k]);
+    }
+
+    if(j < max) {
+        children.push(stage.cubes[i][j+1][k]);
+    }
+    if(j > 0) {
+        children.push(stage.cubes[i][j-1][k]);
+    }
+
+    if(k < max) {
+        children.push(stage.cubes[i][j][k+1]);
+    }
+    if(k > 0) {
+        children.push(stage.cubes[i][j][k-1]);
+    }
     children.forEach(function(child) {
 
+        console.log(child.type);
+        if(!child || child.type === "snake") {
+            return;
+        }
+        child.material.color.setHex(0x554433);
+        scene.add(child.mesh);
         var found = null;
         var childIsInClosed = closedSet.some(function(item) {
-            return item.equal(child);
+            return item.equals(child);
         });
         if(!childIsInClosed) {
             child.d = parentNode.d + distanceFromNodeToNode(parentNode, child);
@@ -74,18 +74,19 @@ function findRoute() {
         return snake.head;
     } else {
         var node = fringeSet.shift();
-        if(node.equal(food.item)) {
+        if(node.equals(food.item)) {
             return node;
         } else {
             var found = null;
             var nodeIsInClosed = closedSet.some(function(item) {
-                return item.equal(node);
+                return item.equals(node);
             });
             if(!nodeIsInClosed) {
                 closedSet.push(node);
                 addChildrenToFringeSet(node);
             }
-            return findRoute();
+            return food.item;
+            //return findRoute();
         }
 
     }
@@ -93,16 +94,8 @@ function findRoute() {
 }
 
 function distanceFromNodeToNode(node1, node2) {
-    var node1X = node1.x;
-    var node1Y = node1.y;
-    
-    var node2X = node2.x;
-    var node2Y = node2.y;
-
-    var dx = (node2X - node1X);
-    var dy = (node2Y - node1Y);
-    var distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-    return distance;
+    var result = node1.position.distanceTo(node2.position);
+    return result;
 }
 
 function updateSnakeFromNode(node) {
@@ -116,6 +109,29 @@ function updateSnakeFromNode(node) {
     snake.tail = newTail;
     snake.head.material.color.setHex(0xFF0000);
 }
+
+ function search() {
+        fringeSet = [];
+        closedSet = [];
+        fringeSet.push(snake.head);
+
+        var node = findRoute();
+        if(node.equals(food.item)) {           
+            food.item.material.color.setHex( 0xbb2b19 );
+           
+            if(node) {
+                nodePath.unshift(node);
+                var curNode = node.parent;
+                while(curNode) {
+                    scene.add(curNode.mesh);
+                    nodePath.unshift(curNode);
+                    curNode = curNode.parent;
+                }
+            }
+        }
+
+    }
+
 
 function setupKeyHandlers() {
 
@@ -208,7 +224,9 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-var stage = new Stage();
+var stage = new Stage({
+    size: STAGE_SIZE
+});
 stage.init(5);
 scene.add(stage.mesh);
 
@@ -236,7 +254,7 @@ var render = function () {
     camera.lookAt( scene.position );
 
     if(!nodePath.length) {
-        //search();
+        search();
     }           
     //update();
 

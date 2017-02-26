@@ -27,13 +27,24 @@ function Cube(options) {
     me.geometry = new THREE.BoxGeometry( me.size, me.size, me.size);
     me.material = new THREE.MeshBasicMaterial( { color: me.color } );
     me.mesh = new THREE.Mesh( me.geometry, me.material );
+
+    if(options.transparent) {
+        me.mesh.material.depthTest = false;
+        me.mesh.material.opacity = 0.15;
+        me.mesh.material.transparent = true;
+
+        var wireframe = new THREE.WireframeGeometry( me.geometry );
+        var lines = new THREE.LineSegments( wireframe );
+        me.mesh.add(lines);
+    }
+
     me.mesh.position.add(me.position);
 }
 
 Cube.prototype.equals = function equals(cube) {
     var me = this;
     return me.position.equals(cube);
-}
+};
 
 Cube.prototype.updatePosition = function updatePosition(cube) {
     var me = this;

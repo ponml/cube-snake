@@ -4,6 +4,7 @@ var Cube = require("./cube.js");
 function Stage(options) {
     var me = this;
     me.cubes = [];
+    me.size = options.size;
 }
 
 Stage.prototype.init = function(dimension) {
@@ -19,11 +20,14 @@ Stage.prototype.init = function(dimension) {
                 me.cubes[i][j].push(new Cube(
                     {
                         position: new THREE.Vector3(
-                            (i+(dimension/2.0))*Cube.CUBE_DIMENSION_SIZE, 
-                            (j+(dimension/2.0))*Cube.CUBE_DIMENSION_SIZE, 
-                            (k+(dimension/2.0))*Cube.CUBE_DIMENSION_SIZE
+                            (i-dimension)*Cube.CUBE_DIMENSION_SIZE, 
+                            (j-dimension)*Cube.CUBE_DIMENSION_SIZE, 
+                            (k-dimension)*Cube.CUBE_DIMENSION_SIZE
                         ),
                         type: "stage",
+                        i: i,
+                        j: j,
+                        k: k,
                         transparent: true
                     }
                 ));
@@ -33,7 +37,7 @@ Stage.prototype.init = function(dimension) {
     }
     var stageSize = dimension * Cube.CUBE_DIMENSION_SIZE;
     var cubeDimPadding = Cube.CUBE_DIMENSION_SIZE;
-    me.geometry = new THREE.BoxGeometry( 100+cubeDimPadding, 100+cubeDimPadding, 100+cubeDimPadding);
+    me.geometry = new THREE.BoxGeometry(me.size, me.size, me.size);
     me.material = new THREE.MeshBasicMaterial( { color: 0xff00ff } );
     me.mesh = new THREE.Mesh( me.geometry, me.material );
     me.mesh.material.depthTest = false;
@@ -43,6 +47,7 @@ Stage.prototype.init = function(dimension) {
     var wireframe = new THREE.WireframeGeometry( me.geometry );
     var lines = new THREE.LineSegments( wireframe );
     me.mesh.add(lines);
+    me.mesh.position.add(new THREE.Vector3(-5,-5,-5));
 }
 
 Stage.prototype.draw = function draw() {
