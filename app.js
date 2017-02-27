@@ -7,49 +7,13 @@ var Food = require("./scripts/food.js");
 var STAGE_SIZE = 100;
 
 function addChildrenToFringeSet(parentNode) {
-    var children = [];
-    
-    var parentX = parentNode.position.x;
-    var parentY = parentNode.position.y;
-    var parentZ = parentNode.position.z;
-
-    var zeroOffset = Cube.CUBE_DIMENSION_SIZE / 2;
-
-    var i = (parentX/Cube.CUBE_DIMENSION_SIZE) + zeroOffset;
-    var j = (parentY/Cube.CUBE_DIMENSION_SIZE) + zeroOffset;
-    var k = (parentZ/Cube.CUBE_DIMENSION_SIZE) + zeroOffset;
-
-    var max = Cube.CUBE_DIMENSION_SIZE - 1;
-
-    var children = [];
-    if(i < max) {
-        children.push(stage.cubes[i+1][j][k]);
-    }
-    if(i > 0) {
-        children.push(stage.cubes[i-1][j][k]);
-    }
-
-    if(j < max) {
-        children.push(stage.cubes[i][j+1][k]);
-    }
-    if(j > 0) {
-        children.push(stage.cubes[i][j-1][k]);
-    }
-
-    if(k < max) {
-        children.push(stage.cubes[i][j][k+1]);
-    }
-    if(k > 0) {
-        children.push(stage.cubes[i][j][k-1]);
-    }
+    var children = parentNode.getChildrenInStage(stage);
     children.forEach(function(child) {
 
-        console.log(child.type);
-        if(!child || child.type === "snake") {
+        if(!child || snake.checkForCollision(child)) {
             return;
         }
         child.material.color.setHex(0x554433);
-        scene.add(child.mesh);
         var found = null;
         var childIsInClosed = closedSet.some(function(item) {
             return item.equals(child);
@@ -85,8 +49,8 @@ function findRoute() {
                 closedSet.push(node);
                 addChildrenToFringeSet(node);
             }
-            return food.item;
-            //return findRoute();
+            //return food.item;
+            return findRoute();
         }
 
     }
@@ -99,39 +63,82 @@ function distanceFromNodeToNode(node1, node2) {
 }
 
 function updateSnakeFromNode(node) {
-    snake.head.material.color.setHex(0x000000);
-    var newTail = snake.tail.next;
-    snake.tail.updatePosition(node);
-    var newHead = snake.tail;
-    newHead.next = null;
-    snake.head.next = newHead;
-    snake.head = newHead;
-    snake.tail = newTail;
-    snake.head.material.color.setHex(0xFF0000);
+
+    var gridIndexes = node.positionToGrid();
+    var i = gridIndexes.i;
+    var j = gridIndexes.j;
+    var k = gridIndexes.k;
+    var max = Cube.CUBE_DIMENSION_SIZE;
+
+    if(i < max && j < max && k < max &&  i >= 0 && j >= 0 && k >=0) {
+        snake.head.material.color.setHex(0x000000);
+        var newTail = snake.tail.next;
+        snake.tail.updatePosition(node);
+        var newHead = snake.tail;
+        newHead.next = null;
+        snake.head.next = newHead;
+        snake.head = newHead;
+        snake.tail = newTail;
+        snake.head.material.color.setHex(0xFF0000);
+    }
 }
 
  function search() {
-        fringeSet = [];
-        closedSet = [];
-        fringeSet.push(snake.head);
+    fringeSet = [];
+    closedSet = [];
+    fringeSet.push(snake.head);
 
-        var node = findRoute();
-        if(node.equals(food.item)) {           
-            food.item.material.color.setHex( 0xbb2b19 );
-           
-            if(node) {
-                nodePath.unshift(node);
-                var curNode = node.parent;
-                while(curNode) {
-                    scene.add(curNode.mesh);
-                    nodePath.unshift(curNode);
-                    curNode = curNode.parent;
-                }
+    var node = findRoute();
+    if(node.equals(food.item)) {           
+        food.item.material.color.setHex( 0xbb2b19 );
+        
+        if(node) {
+            nodePath.unshift(node);
+            var curNode = node.parent;
+            while(curNode) {
+                //scene.add(curNode.mesh);
+                nodePath.unshift(curNode);
+                curNode = curNode.parent;
             }
+        }
+    }
+
+}
+
+function update() {
+    var node = nodePath.shift();
+    if(node) {
+        updateSnakeFromNode(node);
+        checkForFood();
+    }
+}
+
+function checkForFood() {
+    if(snake.head.equals(food.item)) {
+        var grew = snake.grow(stage);
+        if(grew) {
+            scene.add(snake.tail.mesh);
+            var newPos = null;
+            do {
+                newPos = food.getNewPosition(stage);
+            } while(snake.checkForCollisionByPosition(newPos));
+            food.item.position.setX(newPos.x);
+            food.item.position.setY(newPos.y);
+            food.item.position.setZ(newPos.z);
+            food.item.mesh.position.setX(newPos.x);
+            food.item.mesh.position.setY(newPos.y);
+            food.item.mesh.position.setZ(newPos.z);
+            // updateScore();        
+        } else {
+            gameOver();
         }
 
     }
+}
 
+function gameOver() {
+    alert("game over");
+}
 
 function setupKeyHandlers() {
 
@@ -202,7 +209,11 @@ function setupKeyHandlers() {
                     snake.head.position.z - Cube.CUBE_DIMENSION_SIZE),
                 type: "snake"                
             }));
-        }                                       
+        }   
+        else if(event.keyCode === 80) { //p
+            search();
+        }           
+
         console.log("x: "+ camera.position.x + ", y: " + camera.position.y + ", z: " + camera.position.z);
     });
 }
@@ -256,7 +267,7 @@ var render = function () {
     if(!nodePath.length) {
         search();
     }           
-    //update();
+    update();
 
 
     renderer.render(scene, camera);

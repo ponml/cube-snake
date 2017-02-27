@@ -10,23 +10,20 @@ function Food(startPosition) {
     });
 }
 
-Food.prototype.getRandXY = function getRandXY() {
+Food.prototype.getNewPosition = function getNewPosition(stage) {
     function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
     }
-    var me = this;
-    var min = 0;
-    var max = me.allFoodPositionsLookup.length;
-    
-    return me.allFoodPositionsLookup[getRandomInt(min, max)];
-};
 
-Food.prototype.setNewPosition = function setNewPosition() {
     var me = this;
-    var pos = me.getRandXY();
-    me.item.colour = "green";
-    me.item.x = pos.x;
-    me.item.y = pos.y;   
+
+    var max = Cube.CUBE_DIMENSION_SIZE-1;
+
+    var i = getRandomInt(0,max);
+    var j = getRandomInt(0,max);
+    var k = getRandomInt(0,max);
+
+    return new THREE.Vector3().add(stage.cubes[i][j][k].position);
 };
 
 module.exports = Food;

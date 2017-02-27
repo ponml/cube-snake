@@ -43,7 +43,7 @@ function Cube(options) {
 
 Cube.prototype.equals = function equals(cube) {
     var me = this;
-    return me.position.equals(cube);
+    return me.position.equals(cube.position);
 };
 
 Cube.prototype.updatePosition = function updatePosition(cube) {
@@ -51,5 +51,56 @@ Cube.prototype.updatePosition = function updatePosition(cube) {
     me.position = new THREE.Vector3().add(cube.position);
     me.mesh.position.set(cube.position.x, cube.position.y, cube.position.z);
 };
+
+Cube.prototype.positionToGrid = function positionToGrid() {
+    var me = this;
+    var x = me.position.x;
+    var y = me.position.y;
+    var z = me.position.z;
+    var offset = Cube.CUBE_DIMENSION_SIZE / 2;
+    var i = (x/Cube.CUBE_DIMENSION_SIZE) + offset;
+    var j = (y/Cube.CUBE_DIMENSION_SIZE) + offset;
+    var k = (z/Cube.CUBE_DIMENSION_SIZE) + offset;
+    return {
+        i: i,
+        j: j,
+        k: k
+    };
+};
+
+Cube.prototype.getChildrenInStage = function getChildrenInStage(stage) {
+    var me = this;
+    
+    var children = [];   
+    var cubeInStage = me.positionToGrid();
+    var i = cubeInStage.i;
+    var j = cubeInStage.j;
+    var k = cubeInStage.k;
+
+    var max = Cube.CUBE_DIMENSION_SIZE - 1;
+
+    var children = [];
+    if(i < max) {
+        children.push(stage.cubes[i+1][j][k]);
+    }
+    if(i > 0) {
+        children.push(stage.cubes[i-1][j][k]);
+    }
+
+    if(j < max) {
+        children.push(stage.cubes[i][j+1][k]);
+    }
+    if(j > 0) {
+        children.push(stage.cubes[i][j-1][k]);
+    }
+
+    if(k < max) {
+        children.push(stage.cubes[i][j][k+1]);
+    }
+    if(k > 0) {
+        children.push(stage.cubes[i][j][k-1]);
+    }
+    return children;
+}
 
 module.exports = Cube;

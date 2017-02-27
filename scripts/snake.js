@@ -77,6 +77,17 @@ Snake.prototype.reset = function reset() {
 
 };
 
+Snake.prototype.getCubes = function getCubes() {
+    var me = this;
+    var cube = me.tail;
+    var cubes = [];
+    while(cube) {
+        cubes.push(cube)
+        cube = cube.next;
+    }    
+    return cubes;
+};
+
 Snake.prototype.traverse = function traverse(callback) {
     var me = this;
     var cube = me.tail;
@@ -96,20 +107,54 @@ Snake.prototype.clearAll = function clearAll() {
     }
 };
 
-Snake.prototype.grow = function grow() {
+Snake.prototype.checkForCollisionByPosition = function checkForCollisionByPosition(position) {
     var me = this;
-    var directionUpdate = me.updateTailByDirection[me.currentDirection];
-
-    var newTail = new Cube({
-        position: new THREE.Vector3(
-            me.tail.x + directionUpdate.x,
-            me.tail.y + directionUpdate.y,
-            me.tail.z + directionUpdate.z,
-        ),
-        type: "snake"
+    var snakeCubes = me.getCubes();
+    var targetIsInSnake = snakeCubes.some(function(snakeCube) {
+        return snakeCube.position.equals(position);
     });
-    newTail.next = me.tail;
-    me.tail = newTail;
+    return targetIsInSnake;
+}
+
+Snake.prototype.checkForCollision = function checkForCollision(cube) {
+    var me = this;
+    var snakeCubes = me.getCubes();
+    var targetIsInSnake = snakeCubes.some(function(snakeCube) {
+        return snakeCube.equals(cube);
+    });
+    return targetIsInSnake;
+}
+
+Snake.prototype.grow = function grow(stage) {
+    var me = this;
+    var children = me.tail.getChildrenInStage(stage);
+
+    var snakeCubes = me.getCubes();
+
+
+    var newCubeTarget;
+    children.some(function(child) {
+        var childIsInSnake = me.checkForCollision(child);
+        if(!childIsInSnake) {
+            newCubeTarget = child;
+            return true;
+        }
+    });
+
+    if(newCubeTarget) {
+        var newTail = new Cube({
+            position: new THREE.Vector3(
+                newCubeTarget.position.x,
+                newCubeTarget.position.y,
+                newCubeTarget.position.z,
+            ),
+            type: "snake"
+        });
+        newTail.next = me.tail;
+        me.tail = newTail;
+        return true;
+    }
+    return false;
 };
 
 Snake.prototype.cellIsSnake = function cellIsSnake(cell) {
