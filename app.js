@@ -1,11 +1,13 @@
-    var THREE = require("./scripts/three.min.js");
+var THREE = require("./scripts/three.min.js");
 var Stage = require("./scripts/stage.js");
 var Snake = require("./scripts/snake.js");
 var Cube = require("./scripts/cube.js");
 var Food = require("./scripts/food.js");
 
 var STAGE_SIZE = 100;
-
+var currentScore = 0;
+var running = true;
+var mode = "STEP";
 function addChildrenToFringeSet(parentNode) {
     var children = parentNode.getChildrenInStage(stage);
     children.forEach(function(child) {
@@ -99,6 +101,8 @@ function updateSnakeFromNode(node) {
                 curNode = curNode.parent;
             }
         }
+    } else {
+        gameOver();
     }
 
 }
@@ -126,7 +130,7 @@ function checkForFood() {
             food.item.mesh.position.setX(newPos.x);
             food.item.mesh.position.setY(newPos.y);
             food.item.mesh.position.setZ(newPos.z);
-            // updateScore();        
+            updateScore();        
         } else {
             gameOver();
         }
@@ -135,13 +139,28 @@ function checkForFood() {
 }
 
 function gameOver() {
-    alert("game over");
+    if(running) {
+        alert("game over");
+        running = false;
+    }
+}
+
+function updateScore() {
+    document.getElementById("score").textContent = "SCORE: " + ++currentScore;
 }
 
 function setupKeyHandlers() {
 
+    document.getElementById("btn_Auto").onclick = function() {
+        clickAuto();
+    };
+
+    document.getElementById("btn_Step").onclick = function() {
+        clickStep();
+    };
+
     document.addEventListener('keydown', function(event) {
-        var amount = 1;
+        var amount = 3;
         if(event.keyCode === 187) { //+
             camera.position.y += amount;
         } else if(event.keyCode === 189) { //-
@@ -216,6 +235,15 @@ function setupKeyHandlers() {
     });
 }
 
+function clickStep() {
+    mode = "STEP";
+    search();
+}
+
+function clickAuto() {
+    mode = "AUTO";
+}
+
 function addCubeToScene(scene) {
     return function addCube(cube) {
         scene.add(cube.mesh);
@@ -255,20 +283,22 @@ camera.position.y = 100;
 setupKeyHandlers();
 
 var render = function () {
-    requestAnimationFrame( render );
+    if(running) {
+        requestAnimationFrame( render );
 
-    var timer = Date.now() * 0.0001;
-    camera.position.x = Math.cos( timer ) * 200;
-    camera.position.z = Math.sin( timer ) * 200;
-    camera.lookAt( scene.position );
+        var timer = Date.now() * 0.0001;
+        camera.position.x = Math.cos( timer ) * 200;
+        camera.position.z = Math.sin( timer ) * 200;
+        camera.lookAt( scene.position );
 
-    if(!nodePath.length) {
-        search();
-    }           
-    update();
+        if(!nodePath.length && mode === "AUTO") {
+            search();
+        }           
+        update();
 
 
-    renderer.render(scene, camera);
+        renderer.render(scene, camera);
+    }
 };
 
 render();

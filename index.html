@@ -1,22 +1,35 @@
 <html>
 	<head>
-		<title>cubessssssss</title>
+		<title>Cubessssssssss</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
-            #info {
-                position: absolute;
-                top: 10px;
+            .text-div {
+                display: flex;
+                flex-direction: column;
+                align-self: center;
+                justify-content: center;
                 width: 100%;
                 text-align: center;
                 z-index: 100;
-                display:block;
-                color:aliceblue;
+                color:tomato;
+            }
+            .btn-group {
+                display: flex;
+                align-content: center;
+                justify-content: center;
+                align-self: center;
             }
 		</style>
 	</head>
 	<body>		
-        <div id="info">Description</div>
+        <div class="text-div" id="info">Cubessssssssss</div>
+        <div class="text-div" id="score">SCORE: 0</div>
+        <div class="btn-group">
+            <button id="btn_Step">Step</button>
+            <button id="btn_Auto">Auto</button>
+        </div>
+        
 	</body>
     <script src="main.bundle.js"></script>
 </html>
