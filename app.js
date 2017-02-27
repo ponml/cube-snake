@@ -90,8 +90,7 @@ function updateSnakeFromNode(node) {
 
     var node = findRoute();
     if(node.equals(food.item)) {           
-        food.item.material.color.setHex( 0xbb2b19 );
-        
+       
         if(node) {
             nodePath.unshift(node);
             var curNode = node.parent;
