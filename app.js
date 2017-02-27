@@ -13,7 +13,6 @@ function addChildrenToFringeSet(parentNode) {
         if(!child || snake.checkForCollision(child)) {
             return;
         }
-        child.material.color.setHex(0x554433);
         var found = null;
         var childIsInClosed = closedSet.some(function(item) {
             return item.equals(child);
